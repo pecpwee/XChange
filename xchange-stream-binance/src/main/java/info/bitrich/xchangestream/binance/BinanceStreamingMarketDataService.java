@@ -25,8 +25,10 @@ import java.util.stream.Stream;
 import org.knowm.xchange.binance.BinanceAdapters;
 import org.knowm.xchange.binance.BinanceErrorAdapter;
 import org.knowm.xchange.binance.dto.BinanceException;
+import org.knowm.xchange.binance.dto.marketdata.BinanceKline;
 import org.knowm.xchange.binance.dto.marketdata.BinanceOrderbook;
 import org.knowm.xchange.binance.dto.marketdata.BinanceTicker24h;
+import org.knowm.xchange.binance.dto.marketdata.KlineInterval;
 import org.knowm.xchange.binance.service.BinanceMarketDataService;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.knowm.xchange.dto.Order.OrderType;
@@ -46,6 +48,7 @@ public class BinanceStreamingMarketDataService implements StreamingMarketDataSer
   private static final JavaType TICKER_TYPE = getTickerType();
   private static final JavaType TRADE_TYPE = getTradeType();
   private static final JavaType DEPTH_TYPE = getDepthType();
+  private static final JavaType Kline_TYPE = getKlineType();
 
   private final BinanceStreamingService service;
   private final String orderBookUpdateFrequencyParameter;
@@ -400,6 +403,28 @@ public class BinanceStreamingMarketDataService implements StreamingMarketDataSer
         .map(transaction -> transaction.getData().getRawTrade());
   }
 
+
+    private Observable<BinanceKline> kLineStream(CurrencyPair currencyPair, KlineInterval interval) {
+        return service
+                .subscribeChannel(
+                        channelForKlines(currencyPair,"kline",interval))
+                .map(
+                        it ->
+                                this.<KlineBinanceWebsocketTransaction>readTransaction(it, Kline_TYPE, "kline"))
+                .filter(transaction -> transaction.getData().getCurrencyPair().equals(currencyPair))
+                .map(transaction -> transaction.getData().getBinanceKLine());
+    }
+
+
+
+    private String channelForKlines(CurrencyPair currencyPair, String subscriptionType, KlineInterval interval) {
+        String currency = String.join("", currencyPair.toString().split("/")).toLowerCase();
+        String currencyChannel = currency + "@" + subscriptionType;
+        currencyChannel = currencyChannel + "_" + interval.code();
+
+        return currencyChannel;
+
+    }
   /**
    * Force observable to execute its body, this way we get `BinanceStreamingService` to register the
    * observables emitter ready for our message arrivals.
@@ -466,7 +491,15 @@ public class BinanceStreamingMarketDataService implements StreamingMarketDataSer
             new TypeReference<BinanceWebsocketTransaction<TickerBinanceWebsocketTransaction>>() {});
   }
 
-  private static JavaType getTradeType() {
+    private static JavaType getKlineType() {
+        return getObjectMapper()
+                .getTypeFactory()
+                .constructType(
+                        new TypeReference<BinanceWebsocketTransaction<KlineBinanceWebsocketTransaction>>() {});
+    }
+
+
+    private static JavaType getTradeType() {
     return getObjectMapper()
         .getTypeFactory()
         .constructType(

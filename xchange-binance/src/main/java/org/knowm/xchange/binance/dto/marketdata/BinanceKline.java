@@ -36,6 +36,22 @@ public final class BinanceKline {
     this.takerBuyQuoteAssetVolume = new BigDecimal(obj[10].toString());
   }
 
+  public BinanceKline(CurrencyPair pair, KlineInterval interval, long openTime, BigDecimal open, BigDecimal high, BigDecimal low, BigDecimal close, BigDecimal volume, long closeTime, BigDecimal quoteAssetVolume, long numberOfTrades, BigDecimal takerBuyBaseAssetVolume, BigDecimal takerBuyQuoteAssetVolume) {
+    this.pair = pair;
+    this.interval = interval;
+    this.openTime = openTime;
+    this.open = open;
+    this.high = high;
+    this.low = low;
+    this.close = close;
+    this.volume = volume;
+    this.closeTime = closeTime;
+    this.quoteAssetVolume = quoteAssetVolume;
+    this.numberOfTrades = numberOfTrades;
+    this.takerBuyBaseAssetVolume = takerBuyBaseAssetVolume;
+    this.takerBuyQuoteAssetVolume = takerBuyQuoteAssetVolume;
+  }
+
   public CurrencyPair getCurrencyPair() {
     return pair;
   }
