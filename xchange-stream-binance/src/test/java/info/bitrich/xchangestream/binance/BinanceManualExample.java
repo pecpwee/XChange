@@ -5,6 +5,7 @@ import info.bitrich.xchangestream.core.StreamingExchange;
 import info.bitrich.xchangestream.core.StreamingExchangeFactory;
 import io.reactivex.disposables.Disposable;
 import org.knowm.xchange.ExchangeSpecification;
+import org.knowm.xchange.binance.dto.marketdata.KlineInterval;
 import org.knowm.xchange.currency.CurrencyPair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +64,7 @@ public class BinanceManualExample {
     Disposable balances = null;
     Disposable accountInfo = null;
     Disposable executionReports = null;
+    Disposable klineInfo = null;
 
     if (apiKey != null) {
 
@@ -101,6 +103,13 @@ public class BinanceManualExample {
                   accInfo ->
                       LOG.info(
                           "Subscriber got account Info (not printing, often causes console issues in IDEs)"));
+
+      klineInfo = exchange.getStreamingMarketDataService().kLineStream(
+              CurrencyPair.BTC_USDT, KlineInterval.m1
+      ).subscribe(
+              theKlineInfo->
+                      LOG.info("get kline info ",theKlineInfo
+                      ));
     }
 
     Disposable orderbooks = orderbooks(exchange, "one");
@@ -124,6 +133,7 @@ public class BinanceManualExample {
       balances.dispose();
       accountInfo.dispose();
       executionReports.dispose();
+      klineInfo.dispose();
     }
 
     exchange.disconnect().blockingAwait();

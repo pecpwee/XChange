@@ -404,15 +404,13 @@ public class BinanceStreamingMarketDataService implements StreamingMarketDataSer
   }
 
 
-    private Observable<BinanceKline> kLineStream(CurrencyPair currencyPair, KlineInterval interval) {
-        return service
-                .subscribeChannel(
-                        channelForKlines(currencyPair,"kline",interval))
-                .map(
-                        it ->
-                                this.<KlineBinanceWebsocketTransaction>readTransaction(it, Kline_TYPE, "kline"))
-                .filter(transaction -> transaction.getData().getCurrencyPair().equals(currencyPair))
-                .map(transaction -> transaction.getData().getBinanceKLine());
+  public Observable<BinanceKline> kLineStream(CurrencyPair currencyPair, KlineInterval interval) {
+    return service
+            .subscribeChannel(
+                    channelForKlines(currencyPair,"kline",interval))
+            .map(it -> this.<KlineBinanceWebsocketTransaction>readTransaction(it, Kline_TYPE, "kline"))
+            .filter(transaction -> transaction.getData().getCurrencyPair().equals(currencyPair))
+            .map(transaction -> transaction.getData().getBinanceKLine());
     }
 
 
